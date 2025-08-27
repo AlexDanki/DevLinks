@@ -4,7 +4,7 @@ import {getAuth} from 'firebase/auth'
 import {getFirestore} from 'firebase/firestore'
 
 const firebaseConfig = {
-  //apiKey: "AIzaSyDFIHSP1hXD3RedhZr7IgPU1DiruQeH7CM",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: "reactlinks-dced9.firebaseapp.com",
   projectId: "reactlinks-dced9",
   storageBucket: "reactlinks-dced9.firebasestorage.app",
