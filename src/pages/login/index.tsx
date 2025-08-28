@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useState, useEffect, type FormEvent } from 'react'
 import {Input} from '../../components/input'
 import {auth} from '../../services/firebaseConnection'
 import { signInWithEmailAndPassword } from 'firebase/auth'
