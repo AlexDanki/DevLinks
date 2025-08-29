@@ -40,7 +40,6 @@ export function Private(props: PrivateProp){
 
     return(
         <>
-        <h1>Rota Privada</h1>
         {props.children}
         </>
     )
