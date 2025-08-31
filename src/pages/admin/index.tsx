@@ -1,10 +1,18 @@
-import {useState, type FormEvent} from 'react'
+import {useState, useEffect, type FormEvent} from 'react'
 import {Header} from '../../components/header'
 import {Input} from '../../components/input'
 import {IoLink} from 'react-icons/io5'
 import { IoTrashOutline } from "react-icons/io5";
-import { addDoc, collection } from 'firebase/firestore';
+import { addDoc, collection, onSnapshot, orderBy, query, doc, deleteDoc } from 'firebase/firestore';
 import {db} from '../../services/firebaseConnection'
+
+interface LinkProp{
+    id: string;
+    nomeLink: string;
+    bgColor: string;
+    textColor: string;
+    url: string
+}
 
 export function Admin(){
 
@@ -12,6 +20,34 @@ export function Admin(){
     const [nomeUrl, setNomeUrl] = useState("");
     const [colorFundoLink, setColorFundoLink] = useState("#ffffff");
     const [colortextLink, setColorTextLink] = useState("#000000");
+    const [links, setLinks] = useState<LinkProp[]>([])
+
+    useEffect(()=>{
+        const linkRef = collection(db, "Links");
+        const queryRef = query(linkRef, orderBy("date", "asc"));
+
+        const unsub = onSnapshot(queryRef, (snapshot)=>{
+            const list = [] as LinkProp[]
+
+            snapshot.forEach((doc)=>{
+                list.push({
+                    id: doc.id,
+                    nomeLink: doc.data().nomeLink,
+                    bgColor: doc.data().bgColor,
+                    textColor: doc.data().textColor,
+                    url: doc.data().url
+                })
+            })
+
+            setLinks(list);
+            console.log(list);
+        })
+
+        return ()=>{
+            unsub();
+        }
+
+    },[])
 
     async function handleCadastrar(e: FormEvent){
         e.preventDefault();
@@ -24,7 +60,8 @@ export function Admin(){
             nomeLink: nomeLink,
             url: nomeUrl,
             bgColor: colorFundoLink,
-            textColor: colortextLink
+            textColor: colortextLink,
+            date: Date()
         })
         .then(()=>{
             console.log("CADASTRADO COM SUCESSO");
@@ -36,8 +73,13 @@ export function Admin(){
         })
     }
 
+    async function handleDeletLink(id: string){
+        const docRef = doc(db, "Links", id);
+        await deleteDoc(docRef);
+    }
+
     return (
-        <div className='h-screen'>
+        <div className=''>
             <Header/>
 
             <form className="w-full flex flex-col items-center " action="" onSubmit={handleCadastrar}>
@@ -99,18 +141,24 @@ export function Admin(){
             </form>
 
             <h2 className='text-center pt-11 text-[28px] font-bold text-white pb-2'>Meus links</h2>
-            <article className='flex w-full items-center justify-center'>
+            
+            {
+                links.map((item, index)=>(
+                    <article key={index} className='flex w-full items-center justify-center mb-3.5'>
 
-                <div className='bg-red-700 w-11/12 max-w-xl py-2 px-2 flex items-center justify-between rounded-sm'>
-                    <p className='text-white'>Canal do youtube</p>
+                        <div style={{backgroundColor:`${item.bgColor}`}} className={`w-11/12 max-w-xl py-2 px-2 flex items-center justify-between rounded-sm`}>
+                            <p style={{color:`${item.textColor}`}}>{item.nomeLink}</p>
 
-                    <button className='text-white border-[1px] border-white border-dashed p-1 bg-gray-900 '>
-                        <IoTrashOutline />
-                    </button>
-                </div>
+                            <button 
+                            onClick={()=>handleDeletLink(item.id)}
+                            className='text-white border-[1px] cursor-pointer border-white border-dashed p-1 bg-gray-900 '>
+                                <IoTrashOutline />
+                            </button>
+                        </div>
 
-            </article>
-
+                    </article>
+                ))
+            }
 
         </div>
     )
